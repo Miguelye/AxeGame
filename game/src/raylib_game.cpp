@@ -1,8 +1,12 @@
 #include "raylib.h"
 #include <string>
 #include <iostream>
+#include "Circle.h"
+#include "Rectangle.h"
 
 using namespace std;
+bool IsCollision(Shape, Shape);
+
 
 
 int main()
@@ -14,35 +18,20 @@ int main()
 	InitWindow(windowWidth, windowHeight, "Miguel's Window");
 
 	//Circle Data
-	int circleX					= windowWidth / 2;
-	int circleY					= windowHeight / 2;
-	int radius					= 20;
-	int circleSpeed				= 10;
-	//Circle Collider Edges
-	int upperCircleCollider		= circleY - radius;
-	int bottomCircleCollider	= circleY + radius;
-	int leftCircleCollider		= circleX - radius;
-	int rightCircleCollider		= circleX + radius;
+	Circle circle(windowWidth / 2, windowHeight / 2, 20);
+	int circleSpeed		= 10;
 
 	//Rectangle Data
-	int rectX				= 300;
-	int rectY				= 0;
-	int rectHeight			= 50;
-	int rectWidth			= 50;
-	int rectDirectionY		= 10;
-	//Rectangle Collider Edges
-	int upperRectCollider	= rectY;
-	int bottomRectCollider	= rectY + rectHeight;
-	int leftRectCollider	= rectX;
-	int rightRectCollider	= rectX + rectWidth;
+	Rectngl axe(300, 0, 50, 50);
+	int rectDirectionY  = 10;
 
-	bool collisionWithAxe = true;
+
 
 	//GameOver Variable
 	int gameOverMsgX		= windowWidth/2;
 	int gameOverMsgY		= windowHeight/2;
 	int gameOverMsgFont		= 20;
-
+	
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
 	{
@@ -50,7 +39,7 @@ int main()
 		BeginDrawing();
 		ClearBackground(WHITE);
 
-		if (collisionWithAxe)
+		if (IsCollision(axe, circle))
 		{
 			DrawText("Game Over!", gameOverMsgX, gameOverMsgY, gameOverMsgFont, RED);
 		}
@@ -58,51 +47,64 @@ int main()
 		{
 			//Game Logic Begins
 			//DrawRectangle(leftCircleCollider, upperCircleCollider, 40, 40, GREEN);
-			DrawCircle(circleX, circleY, radius, BLUE);
-			DrawRectangle(rectX, rectY, rectWidth, rectHeight, RED);
+			DrawCircle(circle.posX, circle.posY, circle.radius, BLUE);
+			DrawRectangle(axe.posX, axe.posY, axe.width, axe.height, RED);
+
+			//Updating Colliders
+			circle.setColliders();
+			axe.setColliders();
+
+			axe.posY += rectDirectionY;
 
 
 
-			rectY += rectDirectionY;
-
-
-			if (rectY > windowHeight - rectHeight || rectY < 0)
+			if (axe.posY > windowHeight - axe.height || axe.posY < 0)
 			{
 				rectDirectionY = -rectDirectionY;
 			}
 
 			if (IsKeyDown(KEY_D))
 			{
-				if (circleX < windowWidth)
-					circleX += circleSpeed;
+				if (circle.posX < windowWidth)
+					circle.posX += circleSpeed;
 				else
-					circleX = 0;
+					circle.posX = 0;
 			}
 			if (IsKeyDown(KEY_A))
 			{
-				if (circleX > 0)
-					circleX -= circleSpeed;
+				if (circle.posX > 0)
+					circle.posX -= circleSpeed;
 				else
-					circleX = windowWidth;
+					circle.posX = windowWidth;
 			}
 			if (IsKeyDown(KEY_W))
 			{
-				if (circleY > 0)
-					circleY -= circleSpeed;
+				if (circle.posY > 0)
+					circle.posY -= circleSpeed;
 				else
-					circleY = windowHeight;
+					circle.posY = windowHeight;
 			}
 			if (IsKeyDown(KEY_S))
 			{
-				if (circleY < windowHeight)
-					circleY += circleSpeed;
+				if (circle.posY < windowHeight)
+					circle.posY += circleSpeed;
 				else
-					circleY = 0;
+					circle.posY = 0;
 			}
-		}
+		}	
 
 		//Game Logic Ends
 		EndDrawing();
 	}
 	return 0;
+}
+
+bool IsCollision(Shape obj1, Shape obj2)
+{
+	bool collision = (obj1.rightCollider >= obj2.leftCollider) &&
+		(obj1.leftCollider <= obj2.rightCollider) &&
+		(obj1.upperCollider <= obj2.bottomCollider) &&
+		(obj1.bottomCollider >= obj2.upperCollider);
+
+	return collision;
 }
